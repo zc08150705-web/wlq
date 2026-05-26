@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>王丽琴，辛苦了</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+SC:wght@300;400&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --night:#0d0f1a;
+  --navy:#141728;
+  --cream:#faf6ef;
+  --warm:#f5e6d3;
+  --gold:#c8a96e;
+  --blush:#e8c4b8;
+  --text:#e8e0d4;
+  --muted:#9a8f84;
+}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--night);
+  color:var(--text);
+  font-family:'Noto Serif SC',serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* 背景 */
+canvas#bg{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+
+.glow{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(80px);
+  opacity:0.12;
+  pointer-events:none;
+  z-index:0;
+  transition:transform 2s ease;
+}
+.glow-a{width:600px;height:600px;background:#c8a96e;top:-200px;left:-200px;}
+.glow-b{width:500px;height:500px;background:#e8c4b8;bottom:-150px;right:-150px;}
+
+/* 音乐按钮 */
+.music-btn{
+  position:fixed;
+  top:20px;right:20px;
+  z-index:100;
+  width:40px;height:40px;
+  border-radius:50%;
+  border:1px solid rgba(200,169,110,0.3);
+  background:rgba(13,15,26,0.7);
+  backdrop-filter:blur(10px);
+  color:var(--gold);
+  font-size:1rem;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s;
+}
+.music-btn:hover{border-color:var(--gold);background:rgba(200,169,110,0.1);}
+
+/* 内容 */
+.content{
+  position:relative;
+  z-index:10;
+  max-width:680px;
+  margin:0 auto;
+  padding:0 24px 120px;
+}
+
+/* Hero */
+.hero{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  padding:60px 0;
+  opacity:0;
+  animation:fadeUp 1.2s ease 0.3s forwards;
+}
+
+.hero-sub{
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.78rem;
+  letter-spacing:0.3em;
+  color:var(--gold);
+  margin-bottom:32px;
+  opacity:0.8;
+}
+
+.hero-title{
+  font-size:clamp(2rem,6vw,3.2rem);
+  font-weight:300;
+  line-height:1.4;
+  color:var(--cream);
+  margin-bottom:40px;
+}
+
+.hero-title em{
+  font-style:normal;
+  color:var(--gold);
+}
+
+.hero-core{
+  font-size:clamp(0.95rem,2.5vw,1.1rem);
+  font-weight:300;
+  line-height:2;
+  color:var(--muted);
+  max-width:480px;
+  letter-spacing:0.05em;
+}
+
+.scroll-hint{
+  margin-top:60px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  color:var(--muted);
+  font-size:0.72rem;
+  letter-spacing:0.2em;
+  animation:pulse 2.5s ease infinite;
+}
+.scroll-hint span{display:block;width:1px;height:40px;background:linear-gradient(to bottom,var(--gold),transparent);}
+
+/* Section */
+.section{
+  padding:80px 0 0;
+  opacity:0;
+  transform:translateY(30px);
+  transition:opacity 0.8s ease,transform 0.8s ease;
+}
+.section.visible{opacity:1;transform:translateY(0);}
+
+.section-label{
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.7rem;
+  letter-spacing:0.3em;
+  color:var(--gold);
+  margin-bottom:24px;
+  opacity:0.7;
+}
+
+.section-title{
+  font-size:clamp(1.3rem,4vw,1.8rem);
+  font-weight:300;
+  color:var(--cream);
+  margin-bottom:32px;
+  line-height:1.6;
+}
+
+/* 玻璃卡片 */
+.cards{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+.cards.single{grid-template-columns:1fr;}
+
+.card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(200,169,110,0.15);
+  border-radius:16px;
+  padding:28px 24px;
+  backdrop-filter:blur(12px);
+  transition:all 0.4s ease;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,169,110,0.3),transparent);
+}
+.card:hover{
+  background:rgba(255,255,255,0.06);
+  border-color:rgba(200,169,110,0.3);
+  transform:translateY(-4px);
+}
+
+.card-icon{font-size:1.5rem;margin-bottom:14px;display:block;}
+.card-title{
+  font-size:0.95rem;
+  color:var(--cream);
+  margin-bottom:10px;
+  font-weight:400;
+}
+.card-text{
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.82rem;
+  color:var(--muted);
+  line-height:1.9;
+}
+
+/* 引言 */
+.quote{
+  border-left:1px solid var(--gold);
+  padding:24px 32px;
+  margin:48px 0;
+  opacity:0;
+  transform:translateX(-20px);
+  transition:all 0.8s ease;
+}
+.quote.visible{opacity:1;transform:translateX(0);}
+.quote p{
+  font-size:clamp(1rem,3vw,1.2rem);
+  font-weight:300;
+  color:var(--cream);
+  line-height:2;
+  letter-spacing:0.03em;
+}
+.quote-from{
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.75rem;
+  color:var(--gold);
+  margin-top:16px;
+  letter-spacing:0.1em;
+  opacity:0.7;
+}
+
+/* 想说的话 */
+.words{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+.word-item{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  padding:20px 24px;
+  background:rgba(255,255,255,0.03);
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.06);
+  transition:all 0.3s;
+}
+.word-item:hover{background:rgba(255,255,255,0.05);}
+.word-num{
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.7rem;
+  color:var(--gold);
+  opacity:0.6;
+  padding-top:3px;
+  flex-shrink:0;
+  letter-spacing:0.1em;
+}
+.word-text{
+  font-size:0.92rem;
+  line-height:2;
+  color:var(--text);
+  font-weight:300;
+}
+
+/* 结尾 */
+.ending{
+  text-align:center;
+  padding:80px 0 40px;
+  opacity:0;
+  transform:translateY(20px);
+  transition:all 1s ease;
+}
+.ending.visible{opacity:1;transform:translateY(0);}
+.ending-main{
+  font-size:clamp(1.1rem,3.5vw,1.4rem);
+  font-weight:300;
+  color:var(--cream);
+  line-height:2;
+  margin-bottom:32px;
+}
+.ending-sub{
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.8rem;
+  color:var(--muted);
+  letter-spacing:0.1em;
+}
+.ending-line{
+  width:40px;
+  height:1px;
+  background:var(--gold);
+  margin:24px auto;
+  opacity:0.5;
+}
+
+/* 动画 */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes pulse{
+  0%,100%{opacity:0.4;}
+  50%{opacity:1;}
+}
+
+@media(max-width:500px){
+  .cards{grid-template-columns:1fr;}
+  .content{padding:0 20px 80px;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div class="glow glow-a"></div>
+<div class="glow glow-b"></div>
+
+<button class="music-btn" id="musicBtn" title="背景音乐">♪</button>
+<audio id="bgm" loop>
+  <source src="https://cdn.pixabay.com/audio/2022/10/25/audio_fbc6f655e2.mp3" type="audio/mpeg">
+</audio>
+
+<div class="content">
+
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-sub">写给 王丽琴</p>
+    <h1 class="hero-title">
+      你不是必须<em>永远坚强</em>
+    </h1>
+    <p class="hero-core">
+      总有人心疼你藏起来的疲惫。<br>
+      如果今天世界让你累了，<br>
+      那今晚就偷偷休息一下。
+    </p>
+    <div class="scroll-hint">
+      <span></span>
+      往下看
+    </div>
+  </section>
+
+  <!-- 你承担了很多 -->
+  <section class="section">
+    <p class="section-label">01 · 你承担了很多</p>
+    <h2 class="section-title">那些没有说出口的辛苦<br>有人看见了</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">🌙</span>
+        <p class="card-title">工作上的事</p>
+        <p class="card-text">改来改去的客户，压下来的活，还有那些你独自扛着却不说苦的夜晚。</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🌿</span>
+        <p class="card-title">生活里的事</p>
+        <p class="card-text">小布丁的作业，家里的事，还要照顾好自己。你每天都在用力撑着。</p>
+      </div>
+    </div>
+    <div class="cards single">
+      <div class="card">
+        <span class="card-icon">✦</span>
+        <p class="card-title">那些没人知道的</p>
+        <p class="card-text">你说话直，遇到不公平敢开口，心里其实比谁都细腻。你把柔软藏得很深，但它一直在。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="quote section">
+    <p>辛苦不是你的错。<br>你只是太认真了，认真对待每一件事，每一个人。</p>
+    <p class="quote-from">· 写给你的话</p>
+  </div>
+
+  <!-- 你已经很棒了 -->
+  <section class="section">
+    <p class="section-label">02 · 你已经很棒了</p>
+    <h2 class="section-title">不用再证明什么了</h2>
+    <div class="words">
+      <div class="word-item">
+        <span class="word-num">01</span>
+        <p class="word-text">你扛着那么多，还能对人好，这已经很了不起了。</p>
+      </div>
+      <div class="word-item">
+        <span class="word-num">02</span>
+        <p class="word-text">你有原则，不委屈自己，这是很多人做不到的事。</p>
+      </div>
+      <div class="word-item">
+        <span class="word-num">03</span>
+        <p class="word-text">小布丁在你身边，眼睛里都是光。这是你给他的。</p>
+      </div>
+      <div class="word-item">
+        <span class="word-num">04</span>
+        <p class="word-text">偶尔累了，偶尔烦了，都正常。你不需要一直撑着。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="quote section">
+    <p>你可以不坚强。<br>至少在今晚，在这里。</p>
+    <p class="quote-from">· 一直在</p>
+  </div>
+
+  <!-- 想对你说 -->
+  <section class="section">
+    <p class="section-label">03 · 想轻轻说一句</p>
+    <h2 class="section-title">没有什么要求<br>就是想让你知道</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">🕯</span>
+        <p class="card-title">好好吃饭</p>
+        <p class="card-text">再忙也要吃饭，再累也要喝水。你照顾好自己，比什么都重要。</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🌸</span>
+        <p class="card-title">好好休息</p>
+        <p class="card-text">不用熬太晚。明天的事明天再说，今晚先好好睡一觉。</p>
+      </div>
+    </div>
+    <div class="cards single">
+      <div class="card">
+        <span class="card-icon">☁️</span>
+        <p class="card-title">不用一个人扛</p>
+        <p class="card-text">有什么烦心的事，可以说出来。不一定要解决，说出来就会轻一点。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 结尾 -->
+  <div class="ending section">
+    <div class="ending-line"></div>
+    <p class="ending-main">
+      你的疲惫有人看见了。<br>
+      你的坚强有人心疼了。<br>
+      今晚，先好好歇一歇。
+    </p>
+    <div class="ending-line"></div>
+    <p class="ending-sub">王丽琴，辛苦了。</p>
+  </div>
+
+</div>
+
+<script>
+// 星空背景
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [], mouse = {x:0,y:0};
+
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+for(let i=0;i<120;i++){
+  stars.push({
+    x:Math.random(),y:Math.random(),
+    r:Math.random()*1.2+0.3,
+    a:Math.random(),
+    speed:Math.random()*0.0003+0.0001,
+    twinkle:Math.random()*Math.PI*2
+  });
+}
+
+function drawBg(){
+  ctx.clearRect(0,0,W,H);
+  const t = Date.now()*0.001;
+  stars.forEach(s=>{
+    s.twinkle += s.speed*10;
+    const alpha = 0.3 + 0.4*Math.sin(s.twinkle) + s.a*0.3;
+    ctx.beginPath();
+    ctx.arc(s.x*W, s.y*H, s.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(220,210,195,${Math.max(0,Math.min(1,alpha))})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// 鼠标光晕
+document.addEventListener('mousemove', e=>{
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  document.querySelector('.glow-a').style.transform =
+    `translate(${e.clientX*0.02}px,${e.clientY*0.02}px)`;
+  document.querySelector('.glow-b').style.transform =
+    `translate(${-e.clientX*0.015}px,${-e.clientY*0.015}px)`;
+});
+
+// 滚动动画
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) e.target.classList.add('visible');
+  });
+},{threshold:0.15});
+
+document.querySelectorAll('.section,.quote,.ending').forEach(el=>{
+  observer.observe(el);
+});
+
+// 音乐
+const btn = document.getElementById('musicBtn');
+const bgm = document.getElementById('bgm');
+let playing = false;
+btn.addEventListener('click',()=>{
+  if(playing){ bgm.pause(); btn.textContent='♪'; btn.style.color='var(--gold)'; }
+  else{ bgm.play().catch(()=>{}); btn.textContent='♫'; btn.style.color='var(--blush)'; }
+  playing = !playing;
+});
+</script>
+</body>
+</html>
